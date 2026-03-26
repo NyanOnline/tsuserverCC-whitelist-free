@@ -411,9 +411,6 @@ class AOProtocol(asyncio.Protocol):
             return
         elif self.client.is_muted:    # Checks to see if the client has been muted by a mod
             self.client.send_ooc('You are muted by a moderator.')
-        elif not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
-            return
         elif not self.client.area.can_send_message(self.client):
             return
             
@@ -906,12 +903,6 @@ class AOProtocol(asyncio.Protocol):
         """
         if not self.client.is_checked:
             return
-        if not self.client.is_wlisted:
-            if args[1].startswith("/whitelist") or args[1].startswith("/wl"):
-                pass
-            else:
-                self.client.send_ooc("You cannot send OOC messages without being whitelisted.")
-                return
         if self.client.is_ooc_muted:  # Checks to see if the client has been muted by a mod
             self.client.send_ooc('You are muted by a moderator.')
             
@@ -1016,9 +1007,6 @@ class AOProtocol(asyncio.Protocol):
 
         """
         if not self.client.is_checked:
-            return
-        if not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
             return
         try:
             area = self.server.area_manager.get_area_by_name(args[0], self.client)
@@ -1133,9 +1121,6 @@ class AOProtocol(asyncio.Protocol):
         """
         if not self.client.is_checked:
             return
-        if not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
-            return
         if not self.client.area.shouts_allowed:
             self.client.send_ooc(
                 "You cannot use the testimony buttons here!")
@@ -1202,9 +1187,6 @@ class AOProtocol(asyncio.Protocol):
         """
         if not self.client.is_checked:
             return
-        if not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
-            return
         if self.client in self.client.area.owners or self.client.area.evidence_mod == 'FFA':
             if not self.client.can_call_case():
                 raise ClientError('Please wait 60 seconds between case announcements!')
@@ -1243,14 +1225,11 @@ class AOProtocol(asyncio.Protocol):
 
     def net_cmd_hp(self, args):
         """Sets the penalty bar.
-        
+
         HP#<type:int>#<new_value:int>#%
 
         """
         if not self.client.is_checked:
-            return
-        if not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
             return
         if self.client.is_muted:  # Checks to see if the client has been muted by a mod
             self.client.send_ooc('You are muted by a moderator.')
@@ -1280,9 +1259,6 @@ class AOProtocol(asyncio.Protocol):
         """
         if not self.client.is_checked:
             return
-        if not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
-            return
         elif len(args) < 3:
             return
         # evi = Evidence(args[0], args[1], args[2], self.client.pos)
@@ -1299,9 +1275,6 @@ class AOProtocol(asyncio.Protocol):
         """
         if not self.client.is_checked:
             return
-        if not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
-            return
         self.client.area.evi_list.del_evidence(
             self.client, self.client.evi_list[int(args[0])])
         database.log_room('evidence.del', self.client, self.client.area)
@@ -1314,9 +1287,6 @@ class AOProtocol(asyncio.Protocol):
 
         """
         if not self.client.is_checked:
-            return
-        if not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
             return
         elif len(args) < 4:
             return
@@ -1334,9 +1304,6 @@ class AOProtocol(asyncio.Protocol):
         """
         from server.webhooks import Webhooks
         if not self.client.is_checked:
-            return
-        if not self.client.is_wlisted:
-            self.client.send_ooc('You must be whitelisted from discord!')
             return
         if self.client.is_muted:  # Checks to see if the client has been muted by a mod
             self.client.send_ooc('You are muted by a moderator.')

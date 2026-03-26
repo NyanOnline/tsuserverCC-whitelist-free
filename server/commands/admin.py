@@ -22,8 +22,6 @@ __all__ = [
     'ooc_cmd_motd',
     'ooc_cmd_help',
     'ooc_cmd_helpfiles',
-    'ooc_cmd_whitelist',
-    'ooc_cmd_wl',
     'ooc_cmd_kick',
     'ooc_cmd_ban',
     'ooc_cmd_banhdid',
@@ -55,44 +53,6 @@ __all__ = [
     'ooc_cmd_spy',
     'ooc_cmd_about'
 ]
-
-def ooc_cmd_whitelist(client, arg):
-    """
-    Send a request to activate whitelist
-    Usage: /whitelist <name>
-    """
-    if not (client.server.config["commandbot"]["whitelist"]):
-        raise ArgumentError("Whitelist is not enabled on this server!")
-    if client.is_wlisted == True:
-        raise ArgumentError("You have already been whitelisted!")
-    if client.wlrequest == True:
-        raise ArgumentError("You cannot ask to whitelist again. Rejoin!")
-    if len(arg) == 0:
-        raise ArgumentError("You must specify a discord username.")
-    disc_name = arg.strip().lower()
-    client.discord_name = disc_name
-    client.wlrequest = True
-    client.server.commandbot.queue_whitelist_requests.append([client, disc_name])
-    client.send_ooc(f"Whitelist request sent! Please wait for a moment.")
-
-def ooc_cmd_wl(client, arg):
-    """
-    Send a request to activate whitelist
-    Usage: /wl <name>
-    """
-    if not (client.server.config["commandbot"]["whitelist"]):
-        raise ArgumentError("Whitelist is not enabled on this server!")
-    if client.is_wlisted == True:
-        raise ArgumentError("You have already been whitelisted!")
-    if client.wlrequest == True:
-        raise ArgumentError("You cannot ask to whitelist again. Rejoin!")
-    if len(arg) == 0:
-        raise ArgumentError("You must specify a discord username.")
-    disc_name = arg.strip().lower()
-    client.discord_name = disc_name
-    client.wlrequest = True
-    client.server.commandbot.queue_whitelist_requests.append([client, disc_name])
-    client.send_ooc(f"Whitelist request sent! Please wait for a moment.")
 
 """
 Command: /spy
@@ -475,7 +435,6 @@ def kickban(client, arg, ban_hdid):
     except ValueError:
         raise ClientError(f'{raw_ipid} does not look like a valid IPID.')
     modfile = 'config/moderation.yaml'
-    trustedfile = 'config/trustedusers.yaml'
     if os.path.exists(modfile):
         with open(modfile, 'r') as chars:
             mods = yaml.safe_load(chars)
@@ -488,21 +447,6 @@ def kickban(client, arg, ban_hdid):
             if ipid in ipids:
                 if item['status'] == 'admin':
                     return client.send_ooc('Can\'t ban an admin.')
-    if os.path.exists(trustedfile):
-        newtrusted = []
-        with open(trustedfile, 'r') as chars:
-            trusted = yaml.safe_load(chars)
-        for tu in trusted:
-            banned = False
-            for tu_ipid in tu['IPIDs']:
-                if tu_ipid == ipid:
-                    banned = True
-                    break
-            if not banned:
-                newtrusted.append(tu)
-        with open(trustedfile, 'w', encoding='utf-8') as newfile:
-            yaml.dump(newtrusted, newfile)
-
     ban_id = database.ban(ipid, reason, ban_type='ipid', banned_by=client,
         ban_id=ban_id, unban_date=unban_date)
 

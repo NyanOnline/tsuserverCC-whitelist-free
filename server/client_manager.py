@@ -85,10 +85,6 @@ class ClientManager:
             self.hidden = False
             self.hubview = False
             self.pid = -1
-            self.is_wlisted = False
-            self.discord_name = ''
-            self.wlrequest = False
-            
             # Mod/Admin stuff
             self.is_admin = False
             self.is_mod = False
@@ -300,21 +296,6 @@ class ClientManager:
                 if self.afktime:
                     self.afktime.cancel()
                 self.afktime = asyncio.get_event_loop().call_later(self.server.config['afk_delay'], lambda: self.server.client_manager.toggle_afk(self))   
-            if self.server.config['commandbot']['whitelist_trustlevel'] == 'high' and not self.is_wlisted:
-                trustedfile = 'config/trustedusers.yaml'
-                if os.path.exists(trustedfile):
-                    with open(trustedfile, 'r') as chars:
-                        trusted = yaml.safe_load(chars)
-                        for tu in trusted:
-                            for tu_ipid in tu['IPIDs']:
-                                if self.ipid == tu_ipid['IPID']:
-                                    self.is_wlisted = True
-                                    self.discord_name = tu['DiscordName']
-                                    self.server.commandbot.queue_trusted_whitelists.append(self)
-                                    break
-                            if self.is_wlisted:
-                                break
-
         def change_music_cd(self):
             """
             Check if the client can change music or not.
@@ -777,9 +758,6 @@ class ClientManager:
                     if self.is_mod:
                         info += f' ({c.ipid}): {c.name}'
                         
-                    if c.discord_name != '':
-                        info += f" [{c.discord_name}]"
-
             return info
             
         def send_server_bgs(self) -> list:
@@ -917,35 +895,6 @@ class ClientManager:
             for x in avail_char_ids:
                 char_list[x] = 0
             return char_list
-        def whitelist_trust(self):
-            """
-            If whitelist trust level is high, adds client to trusted users file.
-            """
-            
-            if (self.server.config['commandbot']['whitelist_trustlevel'] == 'high'):
-                trustedfile = 'config/trustedusers.yaml'
-                trustedIPIDs = []
-                if not os.path.exists(trustedfile):
-                    trusted = []
-                    trusted.append({'DiscordName': self.discord_name})
-                    trusted[-1]['IPIDs'] = trustedIPIDs
-                    trusted[-1]['IPIDs'].append({'IPID': self.ipid})
-                else:
-                    with open(trustedfile, 'r') as chars:
-                        trusted = yaml.safe_load(chars)
-                    match = False
-                    for tu in trusted:
-                        if tu['DiscordName'] == self.discord_name:
-                            tu['IPIDs'].append({'IPID': self.ipid})
-                            match = True
-                            break
-                    if not match:
-                        trusted.append({'DiscordName': self.discord_name})
-                        trusted[-1]['IPIDs'] = trustedIPIDs
-                        trusted[-1]['IPIDs'].append({'IPID': self.ipid})
-                with open(trustedfile, 'w', encoding='utf-8') as newfile:
-                    yaml.dump(trusted, newfile)
-            
         def auth_mod(self, password: str) -> None:
             """
             Attempt to log in as a moderator.
@@ -1117,14 +1066,6 @@ class ClientManager:
         self.lastjoin = datetime.now()
         self.previd = grab_id
         
-        trustedfile = 'config/trustedusers.yaml'
-        if not (self.server.config['webhooks_enabled']) or not (self.server.config['commandbot']['enabled']) or not (self.server.config['commandbot']['whitelist']):
-            c.is_wlisted = True
-        elif (self.server.config['commandbot']['whitelist_trustlevel'] == 'medium') or (self.server.config['commandbot']['whitelist_trustlevel'] == 'high'):
-            for client in self.clients:
-                if client.ipid == c.ipid and client.is_wlisted:
-                    c.is_wlisted = True
-                    c.discord_name = client.discord_name
         return c
 
     def remove_client(self, client):
